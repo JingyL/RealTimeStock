@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="welcomebox">
+<div class="content">
+    <h1 class="welcome">Welcome</h1>
+    <h1 class="welcome-title">To Do Web</h1>
+    <p class="quote">"Manage your projects efficiently"</p>
+    {% if session['username'] %}
+    <a class="dashboard" href="/{{session['username']}}/board"><i class="fas fa-arrow-right"></i> dashboard</a>
+    {% else %}
+    <h3 class="dashboard">Please <a class="dashboard-l" href="/login">Log In</a> or <a class="dashboard-l" href="/register">Sign Up</a> first! </h3>
+    <!-- <a href="/login">Log In</a>
+    <a href="/register">Sign Up</a> -->
+    {% endif %}
+</div>
+</div>
+
+{% endblock %}

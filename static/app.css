@@ -1,0 +1,255 @@
+
+body{
+    background-color: #FEFAE0;
+}
+.content{
+    text-align: center;
+}
+.welcome{
+    color: #CCD5AE;
+    font-family: 'Corinthia', cursive;
+    font-size: 55px;
+    margin-top: 20px;
+    margin-bottom: -10px; 
+}
+.welcome-title{
+    color: #728359;
+    text-shadow: 2px 2px 5px #647746;
+    font-size: 150px;
+    font-family: 'Lobster', cursive;
+}
+.dashboard{
+    color: #CCD5AE;
+    font-family: 'Readex Pro', sans-serif;
+    font-size: 25px;
+    /* text-shadow: 2px 2px 4px #728359; */
+}
+
+.quote{
+    color: #CCD5AE;
+    font-family: 'Readex Pro', sans-serif;
+    font-size: 25px;
+}
+.dashboard-l{
+    color: #647746;
+    font-family: 'Readex Pro', sans-serif;
+    font-size: 25px;
+    /* text-shadow: 2px 2px 4px #728359; */
+}
+
+.btn{
+    color: #647746;
+}
+/* center */
+.center {
+    margin: 0;
+    font-size: larger;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%) 
+}
+
+.bottom {
+    margin: 0;
+    position: absolute;
+    top: 90%;
+    left: 30%;
+    /* margin-right: -50%; */
+    transform: translate(-50%, -50%);
+}
+.bottom2 {
+    margin: 0;
+    position: absolute;
+    top: 90%;
+    left: 70%;
+    /* margin-right: -50%; */
+    transform: translate(-50%, -50%);
+}
+
+
+
+/* nav-bar */
+.nav-bg{
+background-color: #728359;
+box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+}
+
+a:link {
+    text-decoration: none;
+    color: #FEFAE0;
+    text-shadow: 1px 1px 3px #728359;
+  }
+  
+a:visited {
+    text-decoration: none;
+  }
+  
+a:hover {
+    text-decoration: none;
+    color: black;
+  }
+  
+a:active {
+    text-decoration: none;
+  }
+
+.nav-link{
+    color:#FEFAE0;
+    text-shadow: 1px 1px 3px #728359;
+    font-family: 'Readex Pro', sans-serif;
+    font-size: 100%;
+}
+
+
+
+/* weather */
+.weatherbox{
+    border-radius: 5px;
+    background: #728359;
+    animation: mymove 10s infinite linear;
+    min-width: 200px;
+    min-height: 300px;
+    font-family: 'Josefin Sans', sans-serif;
+    text-align: center;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+
+
+@keyframes mymove {
+0% {background-color: #9aaa82;}
+25% {background-color: #CCD5AE;}
+50% {background-color: #c0a1bb;}
+75% {background-color: #CCD5AE;}
+100% {background-color: #82a7bd;}
+}
+
+.localtime{
+    font-size: 18px;
+}
+.localname{
+    font-size: 25px;
+}
+.region{
+    font-size: 25px;
+}
+.description{
+    font-size: 25px;
+}
+.temp{
+    padding-top: 60px;
+    font-size: 40px;
+}
+
+/* card */
+.box {
+    display: flex;
+    align-items: center;
+    align-items: start;
+    
+  }
+.list-card{
+    display: inline-block;
+    background-color: #FAEDCD;
+    width:200px;
+    margin-left: 1%;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
+    border-radius: 5px;
+}
+.list-title{
+    background-color: #D4A373;
+    padding: 10px;
+    font-family: 'Roboto', sans-serif;
+    color:white;
+    text-shadow: 1px 1px 3px #b37c44;
+    text-align: center;
+    font-size: 150%;
+    box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+    border-radius: 5px;
+    
+}
+.card-name{
+    margin-top: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #b9c29e;
+    color:aliceblue;
+    text-shadow: 1px 1px 3px #728359;
+    padding-top: 2%;
+    padding-left: 2%;
+    padding-right: 2%;
+    padding-bottom: 2%;
+    width:180px;
+    box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+    border-radius: 60% 10% / 10% 60%;
+}
+
+.box {
+    display: flex;
+    align-items: center;
+    align-items: start;
+
+    
+  }
+
+.card-link{
+text-align: center;
+margin-top: 5px;
+  }
+
+
+
+.add-card{
+    font-size:15px;
+    color: #728359;
+    text-shadow: 1px 1px 3px #111111;
+  }
+
+
+/* Board */
+  .board-box{
+    background-color: #839764;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 25px 50px -12px;
+    border-radius: 2px;  
+    position:flex;
+}
+
+  .board-link{
+    font-family: 'Readex Pro', sans-serif;
+    font-size:25px;
+    color: #FAEDCD;
+
+  }
+
+ .add-link{
+    font-size:320%;
+    color: #FAEDCD;
+    text-shadow: 1px 1px 3px #728359;
+
+  }
+
+  .page-title{
+    color: #656b4f;
+    font-size: 50px;
+    font-family: 'Readex Pro', sans-serif;
+    text-shadow: 2px 2px 5px #728359;
+  }
+
+.backtoDashboard{
+    margin-top: 50px;
+}
+.dashboard2{
+    color: #656b4f;
+    font-family: 'Readex Pro', sans-serif;
+    font-size: 20px;
+}
+
+
+
+
+
+
+
+
