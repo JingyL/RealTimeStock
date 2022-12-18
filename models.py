@@ -30,6 +30,8 @@ class User(db.Model):
     city = db.Column(db.Text, nullable=False, default='Los Angeles')
     state = db.Column(db.Text, nullable=False, default='CA')
 
+    buying_power = db.Column(db.Integer, default=100000)
+
     @classmethod
     def register(cls, username, pwd, email, first_name, last_name, city, state):
         """Register user w/hashed password & return user."""
@@ -57,57 +59,39 @@ class User(db.Model):
             return False
 
 
-class CollabBoard(db.Model):
-    """Board."""
+class StockOwning(db.Model):
+    """StockOwning."""
 
-    __tablename__ = 'boards'
+    __tablename__ = 'stockownings'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
-    name = db.Column(db.Text, nullable=False)
+    stock_symbol = db.Column(db.Text, nullable=False)
 
-    archive=db.Column(db.Boolean, default=False)
+    quantity=db.Column(db.Integer, default=0)
+
+    time = db.Column(db.Time)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    users = db.relationship('User', backref='boards')
+    users = db.relationship('User', backref='stockownings')
 
 
-class CollabList(db.Model):
-    """List."""
+class Operation(db.Model):
+    """operation."""
 
-    __tablename__ = 'colists'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-
-    name = db.Column(db.Text, nullable=False)
-
-    boards_id = db.Column(db.Integer, db.ForeignKey('boards.id'))
-
-    boards = db.relationship('CollabBoard', backref='colists')
-
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    users = db.relationship('User', backref='colists')
-
-class CollabCard(db.Model):
-    """Card."""
-
-    __tablename__ = 'cards'
+    __tablename__ = 'operation'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
-    name = db.Column(db.Text, nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    deadline = db.Column(db.DateTime, nullable=False)
+    stock_symbol = db.Column(db.Text, nullable=False)
 
-    lists_id = db.Column(db.Integer, db.ForeignKey('colists.id'))
-    boards_id = db.Column(db.Integer, db.ForeignKey('boards.id'))
-    colists = db.relationship('CollabList', backref='cards')
-    boards = db.relationship('CollabBoard', backref='cards')
+    quantity=db.Column(db.Integer, default=0)
 
+    time = db.Column(db.Time)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    users = db.relationship('User', backref='cards')
+    users = db.relationship('User', backref='operation')
+
 

@@ -1,0 +1,29 @@
+{% extends 'base.html'  %}
+
+{% block content %}
+
+<h1 class="display-1">Trade</h1>
+
+
+<form action="/{{session['username']}}/trade/cal" method="POST">
+
+  {{ form.hidden_tag() }}
+
+  {% for field in form
+    if field.widget.input_type != 'hidden' %}
+  <p>
+    {{ field.label }}
+    {{ field(class_="form-control col-sm-4") }}
+
+    {% for error in field.errors %}
+    <span class="form-text text-danger">{{ error }}</span>
+    {% endfor %}
+  </p>
+  {% endfor %}
+
+
+  <button type="submit">Trade</button>
+
+
+</form>
+{% endblock %}

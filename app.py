@@ -1,14 +1,28 @@
 from flask import Flask, redirect, render_template, flash, session,request
 from flask_debugtoolbar import DebugToolbarExtension
 
-from models import db, connect_db, CollabBoard, CollabList, CollabCard, User
-from forms import boardForm, listForm, cardForm, UserForm, LoginForm
+from models import db, connect_db, StockOwning, Operation, User
+from forms import UserForm, LoginForm, tradeForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import asc
 import requests
 import json
 import os
 import re
+import datetime
+import pandas as pd
+import mplfinance as mpf
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+ 
+from twelvedata import TDClient
+import websocket
+import _thread
+import time
+
+
+api_key = "1dd61578f95549eaad51241b5b74a1fd"
 
 uri = os.getenv("DATABASE_URL",'postgresql:///stock') 
 if uri.startswith("postgres://"):
@@ -45,9 +59,14 @@ s_code = {"AL": "01", "AK": "54", "AZ": "02", "AR": "03", "CA": "04",
 # register
 # login
 # logout
-@app.route('/')
-def inital_page():
-    return render_template('initial.html')
+@app.route('/<username>')
+def inital_page(username):
+    if 'username' not in session or username != session['username']:
+      # flash("Please login first!")
+      return redirect('/login')
+    buyingPower = User.query.filter_by(username=username).first().buying_power
+    return render_template('base.html', buying_power=buyingPower)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_user():
@@ -69,7 +88,7 @@ def register_user():
             return render_template('register.html', form=form)
         session['user_id'] = new_user.id
         session['username'] = new_user.username
-        return redirect(f"/{session['username']}/board")
+        return redirect(f"/{session['username']}/stocks")
 
     return render_template('register.html', form=form)
 
@@ -84,7 +103,7 @@ def login_user():
             flash(f"Welcome Back, {user.username}!")
             session['username'] = user.username
             session['user_id'] = user.id
-            return redirect(f"/{session['username']}/board")
+            return redirect(f"/{session['username']}/stocks")
         else:
             form.username.errors = ['Invalid username/password.']
 
@@ -94,266 +113,158 @@ def login_user():
 def logout_user():
     session.pop('username')
     session.pop('user_id')
-    flash("Goodbye!", "info")
-    return redirect('/')
+    # flash("Goodbye!", "info")
+    return redirect('/login')
 ##############################################################################
-# profile
-@app.route('/profile')
-def profile():
-    if 'username' not in session:
-        return redirect('/')
-    username = session['username']
-    return redirect(f'/{username}/profile')
 
-@app.route("/<username>/profile")
-def show_profile(username):
-    user = User.query.filter_by(username=username).first()
-    return render_template('profile.html', user=user)
+# stock price page
 
-@app.route("/<username>/profile/edit-profile")
-def edit_profile_form(username):
-    user = User.query.filter_by(username=username).first()
-    return render_template('edit-profile.html', user=user)
-
-@app.route("/<username>/profile/edit-profile/edited", methods=['POST'] )
-def editprofile(username):
-    if 'username' not in session or username != session['username']:
-        flash("Please login first!")
-        return redirect('/')
-    curr_user = User.query.filter_by(username=username).first()
-    first_name = request.form["first_name"]
-    last_name = request.form["last_name"]
-    email = request.form["last_name"]
-    city = request.form["city"]
-    state = request.form["state"]
-    curr_user.first_name = first_name
-    curr_user.last_name = last_name
-    curr_user.email = email
-    curr_user.city = city
-    curr_user.state = state
-    db.session.add(curr_user)
-    db.session.commit()
-    return redirect(f'/{username}/profile')
-##############################################################################
-# Homepage with Board and weather
-@app.route("/<username>/board", methods=['GET', 'POST'])
-def root(username):
-    """Main page."""
-    if 'username' not in session or username != session['username']:
-        flash("Please login first!")
-        return redirect('/')
-    user = User.query.filter_by(username=username).first()
-    city = user.city
-    state = user.state
-    state_code = s_code[state]
-    weather_res = requests.get("http://api.openweathermap.org/data/2.5/weather",
-        params = {
-            "q": f"{city}, us",
-            "appid": api_key,
-            "units": "metric"
-        })
-    weather = weather_res.json()
-    # if weather["message"] == "city not found":
-    #     weather_res = requests.get("http://api.openweathermap.org/data/2.5/weather",
-    #     params = {
-    #         "q": "Los Angeles, us",
-    #         "appid":"c69ce1abd18c0eae09db094b5f772100"
-    #     })
-    #     weather = weather_res.json()
-    boards = CollabBoard.query.filter_by(user_id=user.id, archive="f").all()
-
-    return render_template('homepage.html', boards=boards, weather=weather)
-
-##############################################################################
-# Board
-@app.route("/<username>/create-board", methods=['GET', 'POST'])
-def createboard(username):
-    """Create Board."""
-    if 'username' not in session or username != session['username']:
-        flash("Please login first!")
-        return redirect('/')
-    form = boardForm()
-    if form.validate_on_submit():
-        name = form.name.data
-        user_id = session['user_id']
-        new_board = CollabBoard(name=name, user_id=user_id)
-        db.session.add(new_board)
-        db.session.commit()
-        # board = CollabBoard.query.filter_by(name=name).first()
-        return redirect(f'/{username}/board/{new_board.id}')
-    return render_template('create-board.html', form=form)
-
-
-@app.route("/<username>/board/<int:board_id>", methods=['GET', 'POST'])
-def show_board(username,board_id):
-    """Show Board, List."""
-    if 'username' not in session or username != session['username']:
-        flash("Please login first!")
-        return redirect('/')
-    # user = User.query.filter_by(username=username).first()
+@app.route('/<username>/stocks')
+def show_stocks(username):
     user_id = session['user_id']
-    board = CollabBoard.query.get(board_id)
-    lists = [lists for lists in board.colists]
-    dic={}
-    for lists in board.colists:
-        dic[lists.id] = lists
-    keys = list(dic.keys())
-    keys.sort()
-    return render_template('show-board.html', board=board, dic=dic, keys=keys)
+    symbols = ["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL"]
+    symbol_dict = {}
+    # for symbol in symbols:
+      # symbol_dict[symbol] = pull_data(symbol)
+      # pull_data_image(symbol)
+      # time.sleep(20)
+    symbol_dict={
+      "AAPL":100,
+      "MSFT": 120,
+      "TSLA": 130,
+      "AMZN": 90,
+      "GOOGL": 110
+    }
+    buyingPower = User.query.filter_by(username=username).first().buying_power
+    print(buyingPower)
+    shares = {}
+    for symbol in symbols:
+      res = StockOwning.query.filter_by(user_id=user_id, stock_symbol=symbol).first()
+      print(symbol, res)
+      if not res:
+        shares[symbol] = 0
+      else:
+        shares[symbol] = res.quantity
+      
+    return render_template('stocks.html',symbol_dict=symbol_dict, buying_power=buyingPower, shares=shares)
 
-@app.route("/<username>/board/<int:board_id>/delete")
-def delete_board(username,board_id):
-    """Delete Board."""
-    if 'username' not in session or username != session['username']:
-        flash("Please login first!")
-        return redirect('/')
-    user = User.query.filter_by(username=username).first()
-    board = CollabBoard.query.get(board_id)
-    db.session.delete(board)
-    db.session.commit()
-    return redirect(f'/{username}/board')
 
-@app.route("/<username>/board/<int:board_id>/archive")
-def save_board(username,board_id):
-    """Save Board."""
-    if 'username' not in session or username != session['username']:
-        flash("Please login first!")
-        return redirect('/')
-    board = CollabBoard.query.get(board_id)
-    board.archive = True
-    db.session.commit()
-    return redirect(f'/{username}/board')
+def pull_data(Symbol):
+    # Initialize client - apikey parameter is requiered
+    td = TDClient(api_key)
+ 
+    # Construct the necessary time series
+    ts = td.time_series(
+        symbol=Symbol,
+        interval="1min",
+        outputsize=1,
+        timezone="America/New_York",
+    )
 
+    # fig = ts.with_ema(time_period=7).with_mama().with_mom().with_macd().as_plotly_figure()
+
+    # fig.write_image("foo.png")
+    
+    tsp = ts.as_pandas()
+ 
+    price = (tsp["high"].iloc[0] + tsp["low"].iloc[0]) / 2
+    
+    return price
+
+def pull_data_image(Symbol):
+    # Initialize client - apikey parameter is requiered
+    td = TDClient(api_key)
+ 
+    # Construct the necessary time series
+    ts = td.time_series(
+        symbol=Symbol,
+        interval="1day",
+        outputsize=75,
+        timezone="America/New_York",
+    )
+
+    fig = ts.with_ema(time_period=7).with_mama().with_mom().with_macd().as_plotly_figure()
+
+    fig.write_image(f'{Symbol}.png')
+    
+    tsp = ts.as_pandas()
+ 
+    price = (tsp["high"].iloc[0] + tsp["low"].iloc[0]) / 2
+    
+    return price
+    
 ##############################################################################
-# List
-@app.route("/<username>/board/<int:board_id>/create-list", methods=['GET', 'POST'])
-def createlist(username,board_id):
-    """Create List."""
+#  trade
+@app.route('/<username>/trade', methods=['GET', 'POST'])
+def user_trade(username):
     if 'username' not in session or username != session['username']:
-        return redirect('/')
-    form = listForm()
+        # flash("Please login first!")
+        return redirect('/login')
+    buyingPower = User.query.filter_by(username=username).first().buying_power
+    form = tradeForm()
     if form.validate_on_submit():
-        name = form.name.data
+        stock_name = form.stockname.data
         user_id = session['user_id']
-        new_list = CollabList(name=name,boards_id=board_id,user_id=user_id )
-        # session['board_id'] = board_id
-        db.session.add(new_list)
-        db.session.commit()
-        # curr_list = CollabList.query.filter_by(boards_id=board_id, name=name).first()
-        # list_id = curr_list.json().id
-        # session['list_id'] = list_id
-        return redirect(f'/{username}/board/{board_id}')
-    return render_template('create-list.html', form=form)
+        option = form.option.data
+        shares = form.shares.data
+        # db.session.add(new_board)
+        # db.session.commit()
+        # board = CollabBoard.query.filter_by(name=name).first()
+        return redirect(f'/{username}/stocks', buying_power=buyingPower)
 
-@app.route("/<username>/board/<int:board_id>/list/<int:list_id>/edit", methods=['GET', 'POST'])
-def edit_list_form(username,board_id,list_id):
-    """Create List."""
+    return render_template('trade.html', form=form, buying_power=buyingPower)
+    
+ 
+@app.route('/<username>/trade/cal', methods=['GET', 'POST'])
+def user_trade_cal(username):
     if 'username' not in session or username != session['username']:
+        # flash("Please login first!")
         return redirect('/')
-    board = CollabBoard.query.get(board_id)
-    list = CollabList.query.get(list_id)
-    return render_template('edit-list.html', username=username, board=board, list=list)
-
-@app.route("/<username>/board/<int:board_id>/list/<int:list_id>/edit/edited", methods=['GET', 'POST'])
-def editlist(username,board_id, list_id):
-    """Edit List Name."""
-    curr_list = CollabList.query.get(list_id)
-    list_name = request.form["name"]
-    curr_list.name = list_name
-    db.session.add(curr_list)
-    db.session.commit()
-    return redirect(f'/{username}/board/{board_id}')
-
-##############################################################################
-# Card
-@app.route("/<username>/board/<int:board_id>/list/<int:list_id>/create-card", methods=['GET', 'POST'])
-def createcard(username, board_id, list_id):
-    """Create Card."""
-    if 'username' not in session or username != session['username']:
-        flash("Please login first!")
-        return redirect('/')
-    form = cardForm()
+    form = tradeForm()
     if form.validate_on_submit():
-        name = form.name.data
-        description = form.description.data
-        deadline = form.deadline.data
+        stockname = form.stockname.data
         user_id = session['user_id']
-        new_card = CollabCard(name=name,description=description, deadline=deadline,lists_id=list_id, boards_id=board_id, user_id=user_id )
+        option = form.option.data
+        shares = form.shares.data
+        user_buying_power = User.query.filter_by(username = username).first().buying_power
+        current_price = pull_data(stockname)
+      
+        stockOwningQuery = StockOwning.query.filter_by(user_id = user_id, stock_symbol = stockname).first()
+        if not stockOwningQuery:
+          newStockowning = StockOwning(user_id = user_id, stock_symbol = stockname, quantity=0)
+          db.session.add(newStockowning)
+          db.session.commit()
+          stockOwningQuery = StockOwning.query.filter_by(user_id = user_id, stock_symbol = stockname).first()
+          
+          
 
-        db.session.add(new_card)
+        if (option == "buy"):
+          if user_buying_power < shares * current_price:
+            #redirect to fail page
+            flash('Buying power not enough')
+            return redirect(f'/{username}/stocks')
+          else: 
+            user_buying_power -= shares * current_price
+            stockOwningQuery.quantity += shares
+        elif(option == "sell"):
+          if(stockOwningQuery.quantity>shares):
+            stockOwningQuery.quantity -= shares
+            user_buying_power += shares * current_price
+          else:
+            flash('Shares Not Enough')
+            return redirect(f'/{username}/stocks')
+
+
+        user = User.query.filter_by(username = username).first()
+        user.buying_power = user_buying_power
         db.session.commit()
-        return redirect(f'/{username}/board/{board_id}')
-    return render_template('create-card.html', form=form)
-
-
-@app.route("/<username>/board/<int:board_id>/list/<int:list_id>/card/<int:card_id>/edit", methods=['GET', 'POST'])
-def edit_card_form(username,board_id,list_id,card_id):
-    """Create List."""
-    if 'username' not in session or username != session['username']:
-        return redirect('/')
-    board = CollabBoard.query.get(board_id)
-    list = CollabList.query.get(list_id)
-    card = CollabCard.query.get(card_id)
-    return render_template('edit-card.html', username=username, board=board, list=list, card=card)
-
-@app.route("/<username>/board/<int:board_id>/list/<int:list_id>/card/<int:card_id>/edited", methods=['GET', 'POST'])
-def editcard(username,board_id, list_id,card_id):
-    """Edit List Name."""
-    curr_card = CollabCard.query.get(card_id)
-    card_name = request.form["name"]
-    card_description = request.form["description"]
-    card_deadline = request.form["deadline"]
-    curr_card.name = card_name
-    curr_card.description=card_description
-    curr_card.deadline=card_deadline
-    db.session.commit()
-    return redirect(f'/{username}/board/{board_id}')
-
-@app.route("/<username>/board/<int:board_id>/list/<int:list_id>/card/<int:card_id>/move", methods=['GET', 'POST'])
-def move_card_form(username,board_id, list_id,card_id):
-    """Move_card_form."""
-    user = User.query.filter_by(username=username).first()
-    board = CollabBoard.query.get(board_id)
-    list = CollabList.query.get(list_id)
-    card= CollabCard.query.get(card_id)
-    lists = CollabList.query.filter(CollabList.id > list_id, CollabList.boards_id==board_id, CollabList.user_id == user.id).all()
-    return render_template('move-card.html', username=username, board=board, list=list, card=card, lists=lists)
-
-@app.route("/<username>/board/<int:board_id>/list/<int:list_id>/card/<int:card_id>/moved", methods=['GET', 'POST'])
-def move_card(username,board_id, list_id,card_id):
-    """Edit List Name."""
-    user = User.query.filter_by(username=username).first()
-    curr_card = CollabCard.query.get(card_id)
-    list_name = request.form.getlist('checklist')[0]
-    lists= CollabList.query.filter(CollabList.name == list_name,CollabList.boards_id==board_id, CollabList.user_id == user.id).first()
-    lists_id = lists.id
-    curr_card.lists_id = lists_id
-    db.session.commit()
-    return redirect(f'/{username}/board/{board_id}')
+    flash('Buy successfully')
+    return redirect(f'/{username}/stocks')
 
 
 
-##############################################################################
-# Archive
-@app.route("/archive", methods=['GET', 'POST'])
-def go_archive():
-    if 'username' not in session:
-        return redirect('/')
-    username = session['username']
-    return redirect(f'/{username}/archive')
 
-@app.route("/<username>/archive", methods=['GET', 'POST'])
-def show_archive(username):
-    user = User.query.filter_by(username=username).first()
-    boards = CollabBoard.query.filter_by(user_id=user.id, archive="t").all()
-    return render_template('archive.html',boards=boards)
 
-@app.route("/<username>/archive/<int:board_id>/archive", methods=['GET', 'POST'])
-def board_archive(username,board_id):
-    """Show Board, List."""
-    if 'username' not in session or username != session['username']:
-        flash("Please login first!")
-        return redirect('/')
-    board = CollabBoard.query.get(board_id)
-    lists = [lists for lists in board.colists]
-    return render_template('archive-lists.html', board=board, lists=lists)
+
+
+

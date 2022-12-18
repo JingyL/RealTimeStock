@@ -1,10 +1,174 @@
 
 body{
-    background-color: #FEFAE0;
+  height: 100vh;
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(to top right, #e9edc9, #cdb4db);
+  font-size: 12px;
 }
+
+.center{
+  position: absolute;
+  display: block;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80vw;
+  height: 88vh;
+  max-width: 800px;
+  display: flex;
+}
+
+
 .content{
     text-align: center;
 }
+
+
+/* left */
+.left{
+  flex: 0 0 150px;
+  width: 200px;
+  height: 100%;
+  background-color: white;
+  color: #848697;
+  border-radius: 3px 0 0 3px;
+  /* position: fixed; */
+  
+}
+
+
+.navigation{
+  position: relative;
+  display: block;
+  margin-top: 80%;
+  margin-bottom: 10px;
+}
+
+.logo{
+  position: relative;
+  top: 10px;
+  height: 100px;
+}
+
+
+li{
+  padding: 0px 25px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.nav-link{
+  color:#89877b;
+  /* text-shadow: 1px 1px 3px #728359; */
+  font-family: 'Readex Pro', sans-serif;
+  font-size: 100%;
+}
+
+.buying-power{
+  margin-top: 10%;
+  font-size: 70%;
+  text-align:center;
+}
+/* right */
+.right{
+  flex: 1 1 auto;
+  background-color: #f6f6fc;
+  padding: 30px;
+  border-radius: 0 3px 3px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+}
+
+.message-color{
+  color:blueviolet;
+}
+
+.market-flat{
+  overflow:auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.apart{
+  display: flex;
+  justify-content: space-between;
+  margin-right: 5px;
+}
+.stock{
+    /* position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 40px;
+    padding: 5px 0;
+    margin: 8px 0; */
+    /* box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); */
+    float: left;
+    width: 50%; /* three boxes (use 25% for four, and 50% for two, etc) */
+    padding: 5px;
+}
+
+/* .stock-logo{
+  position: relative;
+  display: flex;
+  justify-content: center;
+  flex: 0;
+  margin-right: 10px;
+} */
+
+
+.stock-name{
+  color: darkblue;
+}
+
+
+
+
+.stock-value{
+  flex: 1;
+  font-weight: bold;
+  color: gray;
+}
+
+
+.btn {
+  width: 10rem;
+  height: 2rem;
+  border-radius: 1rem;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: .3s ease;
+  background-color: #cdb4db;
+  float:right;
+}
+
+.market{
+  margin-top: 5%;
+  margin-bottom: 5%; 
+  float:left;
+  /* float:left;
+  margin-left: 0%; */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 .welcome{
     color: #CCD5AE;
     font-family: 'Corinthia', cursive;
@@ -19,7 +183,7 @@ body{
     font-family: 'Lobster', cursive;
 }
 .dashboard{
-    color: #CCD5AE;
+    color: #dee2ff;
     font-family: 'Readex Pro', sans-serif;
     font-size: 25px;
     /* text-shadow: 2px 2px 4px #728359; */
@@ -31,7 +195,7 @@ body{
     font-size: 25px;
 }
 .dashboard-l{
-    color: #647746;
+    color: #dee2ff;
     font-family: 'Readex Pro', sans-serif;
     font-size: 25px;
     /* text-shadow: 2px 2px 4px #728359; */
@@ -68,183 +232,6 @@ body{
     transform: translate(-50%, -50%);
 }
 
-
-
-/* nav-bar */
-.nav-bg{
-background-color: #728359;
-box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
-}
-
-a:link {
-    text-decoration: none;
-    color: #FEFAE0;
-    text-shadow: 1px 1px 3px #728359;
-  }
-  
-a:visited {
-    text-decoration: none;
-  }
-  
-a:hover {
-    text-decoration: none;
-    color: black;
-  }
-  
-a:active {
-    text-decoration: none;
-  }
-
-.nav-link{
-    color:#FEFAE0;
-    text-shadow: 1px 1px 3px #728359;
-    font-family: 'Readex Pro', sans-serif;
-    font-size: 100%;
-}
-
-
-
-/* weather */
-.weatherbox{
-    border-radius: 5px;
-    background: #728359;
-    animation: mymove 10s infinite linear;
-    min-width: 200px;
-    min-height: 300px;
-    font-family: 'Josefin Sans', sans-serif;
-    text-align: center;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
-}
-
-
-
-@keyframes mymove {
-0% {background-color: #9aaa82;}
-25% {background-color: #CCD5AE;}
-50% {background-color: #c0a1bb;}
-75% {background-color: #CCD5AE;}
-100% {background-color: #82a7bd;}
-}
-
-.localtime{
-    font-size: 18px;
-}
-.localname{
-    font-size: 25px;
-}
-.region{
-    font-size: 25px;
-}
-.description{
-    font-size: 25px;
-}
-.temp{
-    padding-top: 60px;
-    font-size: 40px;
-}
-
-/* card */
-.box {
-    display: flex;
-    align-items: center;
-    align-items: start;
-    
-  }
-.list-card{
-    display: inline-block;
-    background-color: #FAEDCD;
-    width:200px;
-    margin-left: 1%;
-    box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
-    border-radius: 5px;
-}
-.list-title{
-    background-color: #D4A373;
-    padding: 10px;
-    font-family: 'Roboto', sans-serif;
-    color:white;
-    text-shadow: 1px 1px 3px #b37c44;
-    text-align: center;
-    font-size: 150%;
-    box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-    border-radius: 5px;
-    
-}
-.card-name{
-    margin-top: 5px;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: #b9c29e;
-    color:aliceblue;
-    text-shadow: 1px 1px 3px #728359;
-    padding-top: 2%;
-    padding-left: 2%;
-    padding-right: 2%;
-    padding-bottom: 2%;
-    width:180px;
-    box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-    border-radius: 60% 10% / 10% 60%;
-}
-
-.box {
-    display: flex;
-    align-items: center;
-    align-items: start;
-
-    
-  }
-
-.card-link{
-text-align: center;
-margin-top: 5px;
-  }
-
-
-
-.add-card{
-    font-size:15px;
-    color: #728359;
-    text-shadow: 1px 1px 3px #111111;
-  }
-
-
-/* Board */
-  .board-box{
-    background-color: #839764;
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 25px 50px -12px;
-    border-radius: 2px;  
-    position:flex;
-}
-
-  .board-link{
-    font-family: 'Readex Pro', sans-serif;
-    font-size:25px;
-    color: #FAEDCD;
-
-  }
-
- .add-link{
-    font-size:320%;
-    color: #FAEDCD;
-    text-shadow: 1px 1px 3px #728359;
-
-  }
-
-  .page-title{
-    color: #656b4f;
-    font-size: 50px;
-    font-family: 'Readex Pro', sans-serif;
-    text-shadow: 2px 2px 5px #728359;
-  }
-
-.backtoDashboard{
-    margin-top: 50px;
-}
-.dashboard2{
-    color: #656b4f;
-    font-family: 'Readex Pro', sans-serif;
-    font-size: 20px;
-}
 
 
 

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="stocks">
+<div class="content">
+  {% with message = get_flashed_messages() %}
+    {% if message %}
+      <p class="message-color">{{ message[0] }}</p>
+    {% endif %}
+  {% endwith %}
+  <div class="market-flat">
+    <h1 class="market">Market</h1>
+    <form action="/{{session['username']}}/trade" method="get">
+      <button class="btn" type="submit">Trade</button>
+   </form>
+  </div>
+
+
+    {% for symbol in symbol_dict %}
+    <div class="stock">
+      <!-- <i class="stock-logo fa-brands fa-apple"></i> -->
+      <img class="stock-logo" src="/static/images/AAPL.png" style="width:70%"></img>
+      <p class="stock-name">{{symbol}}</p>
+      <div class="apart">
+      <p class="stock-value">$ {{symbol_dict[symbol]}}</p>
+      <p class="stock-shares"><span style="color: #5e022f">{{shares[symbol]}} shares</span></p>
+    </div>
+    </div>
+
+    {% endfor %}
+
+
+
+ 
+</div>
+</div>
+
+{% endblock %}

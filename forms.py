@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, DateField, PasswordField, FloatField, BooleanField, SelectField,TextAreaField
+from wtforms import StringField, DateField, PasswordField, FloatField, BooleanField, SelectField,TextAreaField, IntegerField
 
 from wtforms.validators import InputRequired, Length, Optional, URL
 
@@ -31,27 +31,12 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[InputRequired()])
 
 
-class boardForm(FlaskForm):
-    """Form for adding boards."""
+class tradeForm(FlaskForm):
+    """Form for trading."""
 
     # Add the necessary code to use this form
-    name = StringField("name", validators=[
-                       InputRequired(message="Name can't be blank")])
+    stockname = SelectField("stock name", choices=["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL"])
+    option = SelectField("option", choices=["buy", "sell"])
+    shares = IntegerField("shares", validators=[InputRequired()])
  
 
-class listForm(FlaskForm):
-    """Form for adding lists."""
-
-    # Add the necessary code to use this form
-    name = StringField("name", validators=[
-                       InputRequired(message="Name can't be blank")])
-
-
-class cardForm(FlaskForm):
-    """Form for adding cards."""
-
-    # Add the necessary code to use this form
-    name = StringField("name", validators=[
-                       InputRequired(message="Name can't be blank")])
-    description = StringField("description")
-    deadline = DateField("deadline")
